@@ -3,9 +3,9 @@
 :root {
   --bg-color: #fff8f1;
   --text-color: #431407;    
-  --primary-color: #f97316; 
+  --primary-color: #f97316;
   --surface-color: #ffedd5;
-  --primary-bg-color:#ffecdf;
+  --primary-bg-color:#ffecdf; 
 }
 
 *{
@@ -18,7 +18,7 @@
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
-  font-size: 24px;  /* Preferred icon size */
+  font-size: 24px;
   display: inline-block;
   line-height: 1;
   text-transform: none;
@@ -65,20 +65,32 @@ body {
 
 .navbar ul li{
     cursor: pointer;
-    margin: 0 10px;
 }
 
-.navbar ul li button{
-    background-color: var(--primary-color);
-    color: var(--bg-color);
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
+.navbar .nav-links li{
+    padding: 5px;
+    border-bottom: 2px solid transparent;
+    margin: 0 5px;
+    white-space: nowrap;
+    transition: 0.5s
 }
 
+.navbar .nav-links li:hover{
+    color: var(--primary-color);
+    border-color: rgb(241, 120, 28);
+}
 
+.navbar .nav-links li:focus{
+    color: red;
+}
+
+.navbar .nav-icons{
+    gap: 15px;
+}
+
+.login-item{
+    white-space: nowrap;
+}
 
 .text-headline{
     color: var(--primary-color);
@@ -303,7 +315,153 @@ body {
     font-weight: 500;
 }
 
+.categories-heading{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 60px;
+}
 
+.categories-heading h2{
+    font-size: clamp(20px, 3vw, 25px);
+    font-weight: 600;
+}
+
+.categories-heading p{
+    text-decoration: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--primary-color);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.categories-heading p .p-text{
+    margin-right: 5px;
+}
+
+.categories-heading p .p-text:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.categories{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.categories .category-card{
+    flex: 1 1 180px;
+    max-width: 200px;
+    height: 200px;
+    border-radius: 20px;
+    border: 2px solid #31302f2d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.categories .category-card img{
+    width: 100px;
+    height: 100px;
+    max-width: 60%;
+    margin-bottom: 10px;
+}
+
+.offer-banner{
+    width: 100%;
+    min-height: 300px;
+    max-height: 400px;
+    height: auto;
+    border-radius: 20px;
+    margin: 40px 0;
+    background-color: #ff452c;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    overflow: hidden;
+    padding: 20px 0;
+}
+
+.offer-banner .offer-banner-content{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    color: var(--bg-color);
+    margin-left: 40px;
+    flex: 1 1 260px;
+    min-width: 220px;
+    padding: 10px 0;
+}
+
+.offer-banner .offer-banner-content p:nth-of-type(1){
+    background-color: var(--primary-color);
+    color: var(--primary-bg-color);
+    font-weight: 600;
+    display: inline-block;
+    width: fit-content;
+    padding: 5px 10px;
+    border-radius: 8px;
+    box-shadow: 2px 10px 15px -8px #0b0b0b55;
+    margin-bottom: 30px;
+}
+
+.offer-banner .offer-banner-content h2{
+    font-size: clamp(28px, 5vw, 55px);
+    font-weight: 900;
+    line-height: 1.15;
+}
+
+.offer-banner .offer-banner-content p:nth-of-type(2){
+    font-size: clamp(22px, 4.5vw, 55px);
+    font-weight: 400;
+}
+
+.offer-banner .offer-banner-button{
+    flex: 0 0 auto;
+    margin: 15px 30px;
+}
+
+.offer-banner .offer-banner-button button{
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+    border: none;
+    padding: 20px 40px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: clamp(16px, 2vw, 22px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.offer-banner-image{
+    flex: 1 1 260px;
+    display: flex;
+    justify-content: center;
+}
+
+.offer-banner-image img{
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 20px;
+    display: block;
+}
 
 /* ============================= */
 /* Responsive breakpoints        */
@@ -328,6 +486,13 @@ body {
 @media (max-width: 900px){
     body{
         margin: 0 24px;
+    }
+
+    .navbar .nav-links{
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
     }
 
     .landing-page{
@@ -376,6 +541,40 @@ body {
         bottom: 0;
         right: 0;
     }
+
+    .categories{
+        justify-content: center;
+    }
+
+    .offer-banner{
+        justify-content: center;
+        text-align: center;
+        padding: 30px 20px;
+    }
+
+    .offer-banner .offer-banner-content{
+        margin-left: 0;
+        align-items: center;
+    }
+
+    .offer-banner .offer-banner-content p:nth-of-type(1){
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .offer-banner .offer-banner-button{
+        margin: 10px 0;
+    }
+
+    .offer-banner-image{
+        order: 3;
+        flex-basis: 100%;
+        margin-top: 10px;
+    }
+
+    .offer-banner-image img{
+        max-width: 320px;
+    }
 }
 
 /* Mobile phones */
@@ -392,6 +591,29 @@ body {
         width: 120px;
         height: auto;
     }
+
+    .navbar .nav-icons li span.material-icons-outlined{
+        font-size: 20px;
+    }
+
+    .login-item span + text,
+    .login-item{
+        font-size: 14px;
+    }
+
+
+    .navbar .nav-links.nav-open{
+        display: flex;
+    }
+
+    .navbar .nav-links li{
+        margin: 8px 0;
+    }
+
+    .menu-toggle{
+        display: inline-flex;
+    }
+
     .text-headline{
         font-size: 13px;
         margin-left: auto;
@@ -445,6 +667,45 @@ body {
     .delivery-text p{
         font-size: 10px;
     }
+
+    .categories-heading{
+        margin-top: 40px;
+    }
+
+    .categories .category-card{
+        flex: 1 1 45%;
+        max-width: 47%;
+        height: 160px;
+        border-radius: 14px;
+    }
+
+    .categories .category-card img{
+        width: 70px;
+        height: 70px;
+    }
+
+    .categories .category-card p{
+        font-size: 14px;
+        text-align: center;
+        padding: 0 5px;
+    }
+
+    .offer-banner{
+        margin: 30px 0;
+        border-radius: 16px;
+    }
+
+    .offer-banner .offer-banner-content p:nth-of-type(1){
+        font-size: 12px;
+    }
+
+    .offer-banner .offer-banner-button button{
+        padding: 14px 26px;
+    }
+
+    .offer-banner-image img{
+        max-width: 220px;
+    }
 }
 
 /* Small phones */
@@ -460,5 +721,10 @@ body {
     .search-button{
         padding: 12px;
         font-size: 14px;
+    }
+
+    .categories .category-card{
+        flex: 1 1 100%;
+        max-width: 100%;
     }
 }
