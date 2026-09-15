@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="./favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="./favicon/favicon.svg" />
+    <link rel="shortcut icon" href="./favicon/favicon.ico" />
+    <meta name="apple-mobile-web-app-title" content="Eat Dash" />
+    <link rel="manifest" href="./favicon/site.webmanifest" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/index.css">
+    <title>Log in — Eat Dash</title>
+</head>
+<body>
+
+<header class="navbar">
+    <div><a href="index.html"><img src="./public/logo.png" alt="website logo" width="150" height="50"></a></div>
+    <ul id="navLinks">
+        <li><a href="login.html">Login</a></li>
+        <li><button class="signup-button" onclick="location.href='register.html'">Sign Up</button></li>
+    </ul>
+</header>
+
+<main class="app-main">
+  <div class="auth-wrap">
+    <h2 class="eyebrow">
+      <span class="material-icons-outlined" style="font-size:16px;">lock</span>
+      Welcome back
+    </h2>
+    <h1 class="page-title">Log in to Eat Dash</h1>
+    <p class="page-sub">Choose customer if you're here to order, or administrator if you run the kitchen.</p>
+
+    <div class="seg-toggle" id="loginTabs">
+      <button type="button" class="active" data-target="customerPane">Customer</button>
+      <button type="button" data-target="adminPane">Administrator</button>
+    </div>
+
+    <div id="customerPane" class="card-panel">
+      <form id="customerLoginForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="custEmail">Email</label>
+          <input type="email" id="custEmail" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="custPassword">Password</label>
+          <input type="password" id="custPassword" class="form-input" required>
+        </div>
+        <div id="customerLoginError" class="form-error" style="display:none;"></div>
+        <button type="submit" class="btn btn-primary btn-block">
+          Log in
+          <span class="material-icons-outlined" style="font-size:18px;">arrow_forward</span>
+        </button>
+      </form>
+      <p class="auth-foot">New to Eat Dash? <a href="register.html">Create an account</a></p>
+    </div>
+
+    <div id="adminPane" class="card-panel" style="display:none;">
+      <form id="adminLoginForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="adminUser">Username</label>
+          <input type="text" id="adminUser" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="adminPass">Password</label>
+          <input type="password" id="adminPass" class="form-input" required>
+        </div>
+        <div id="adminLoginError" class="form-error" style="display:none;"></div>
+        <button type="submit" class="btn btn-primary btn-block">
+          Log in as administrator
+          <span class="material-icons-outlined" style="font-size:18px;">arrow_forward</span>
+        </button>
+      </form>
+      <p class="demo-hint">Demo credentials: <code>admin</code> / <code>admin123</code></p>
+    </div>
+  </div>
+</main>
+
+<script src="./js/app.js"></script>
+<script>
+  (function(){
+    const s = getSession();
+    if (s && s.role === 'admin') window.location.href = 'admin.html';
+    if (s && s.role === 'customer') window.location.href = 'customer.html';
+  })();
+
+  document.querySelectorAll('#loginTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#loginTabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('customerPane').style.display = 'none';
+      document.getElementById('adminPane').style.display = 'none';
+      document.getElementById(btn.dataset.target).style.display = 'block';
+    });
+  });
+
+  document.getElementById('customerLoginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('custEmail').value.trim();
+    const password = document.getElementById('custPassword').value;
+    const errorBox = document.getElementById('customerLoginError');
+    const match = loginCustomer(email, password);
+    if (match){
+      window.location.href = 'customer.html';
+    } else {
+      errorBox.textContent = 'No account matches that email and password.';
+      errorBox.style.display = 'block';
+    }
+  });
+
+  document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const username = document.getElementById('adminUser').value.trim();
+    const password = document.getElementById('adminPass').value;
+    const errorBox = document.getElementById('adminLoginError');
+    if (loginAdmin(username, password)){
+      window.location.href = 'admin.html';
+    } else {
+      errorBox.textContent = 'Incorrect administrator username or password.';
+      errorBox.style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="./favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="./favicon/favicon.svg" />
+    <link rel="shortcut icon" href="./favicon/favicon.ico" />
+    <meta name="apple-mobile-web-app-title" content="Eat Dash" />
+    <link rel="manifest" href="./favicon/site.webmanifest" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/index.css">
+    <title>Menu — Eat Dash</title>
+</head>
+<body>
+
+<header class="navbar">
+    <div><a href="index.html"><img src="./public/logo.png" alt="website logo" width="150" height="50"></a></div>
+    <ul id="navLinks"></ul>
+</header>
+
+<main class="app-main">
+  <div style="max-width:1180px; margin:0 auto;">
+    <h2 class="eyebrow">
+      <span class="material-icons-outlined" style="font-size:16px;">restaurant_menu</span>
+      Today's menu
+    </h2>
+    <h1 class="page-title" id="welcomeLine">What are you craving?</h1>
+    <p class="page-sub">Add whatever looks good to your order, then check out when you're ready.</p>
+
+    <div class="seg-toggle" id="custTabs">
+      <button type="button" class="active" data-target="paneBrowse">Browse menu</button>
+      <button type="button" data-target="paneHistory">My orders</button>
+    </div>
+
+    <div id="paneBrowse" style="display:grid; grid-template-columns: 1fr 320px; gap:24px; align-items:start;">
+      <div>
+        <div class="food-grid" id="foodGrid"></div>
+        <div id="foodGridEmpty" class="empty-state" style="display:none; margin-top:16px;">The kitchen hasn't added any items yet.</div>
+      </div>
+
+      <div class="cart-panel">
+        <h3 style="font-weight:600; margin-bottom:14px;">
+          <span class="material-icons-outlined" style="vertical-align:middle; color:var(--primary-color);">shopping_bag</span>
+          Your order
+        </h3>
+        <div id="cartItems"></div>
+        <p id="cartEmpty" class="page-sub" style="display:none; font-size:13px;">Nothing in your order yet — add an item from the menu.</p>
+        <div class="order-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
+        <button class="btn btn-primary btn-block" id="placeOrderBtn" style="margin-top:14px;">
+          Place order
+          <span class="material-icons-outlined" style="font-size:18px;">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="paneHistory" style="display:none;">
+      <div class="card-panel">
+        <h3 style="font-weight:600; margin-bottom:4px;">Your order history</h3>
+        <p class="page-sub" style="margin-bottom:18px; font-size:13px;">Everything you've ordered from Eat Dash.</p>
+        <div id="historyList" style="display:flex; flex-direction:column; gap:14px;"></div>
+        <div id="historyEmpty" class="empty-state" style="display:none;">You haven't placed any orders yet.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="./js/app.js"></script>
+<script>
+  const session = requireCustomer();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (session){
+      document.getElementById('welcomeLine').textContent = `Welcome back, ${session.customerName}`;
+    }
+  });
+
+  document.querySelectorAll('#custTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#custTabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('paneBrowse').style.display = 'none';
+      document.getElementById('paneHistory').style.display = 'none';
+      const target = document.getElementById(btn.dataset.target);
+      target.style.display = btn.dataset.target === 'paneBrowse' ? 'grid' : 'block';
+      if (btn.dataset.target === 'paneHistory') renderHistory();
+    });
+  });
+
+  const PLACEHOLDER_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="150"><rect width="240" height="150" fill="%23ffedd5"/><text x="50%" y="55%" font-size="40" text-anchor="middle">🍽</text></svg>'
+  );
+
+  function renderFoodGrid(){
+    const foods = getFoods();
+    const grid = document.getElementById('foodGrid');
+    const empty = document.getElementById('foodGridEmpty');
+    if (foods.length === 0){
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = foods.map(f => `
+      <div class="food-tile">
+        <img src="${f.image ? escapeHtml(f.image) : PLACEHOLDER_IMG}" alt="${escapeHtml(f.foodname)}" onerror="this.src='${PLACEHOLDER_IMG}'">
+        <div class="food-tile-body">
+          <div class="food-tile-name">${escapeHtml(f.foodname)}</div>
+          <div class="food-tile-desc">${escapeHtml(f.description || '')}</div>
+          <div class="food-tile-footer">
+            <span class="food-tile-price">${money(f.price)}</span>
+            <button class="btn btn-primary btn-sm" onclick="addToCart('${f.fid}'); renderCart();">
+              <span class="material-icons-outlined" style="font-size:16px;">add</span>
+              Add
+            </button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderCart(){
+    const cart = getCart();
+    const itemsBox = document.getElementById('cartItems');
+    const emptyBox = document.getElementById('cartEmpty');
+    if (cart.length === 0){
+      itemsBox.innerHTML = '';
+      emptyBox.style.display = 'block';
+    } else {
+      emptyBox.style.display = 'none';
+      itemsBox.innerHTML = cart.map(i => `
+        <div class="order-row" style="align-items:center;">
+          <span>${escapeHtml(i.foodname)}</span>
+          <span style="display:flex; align-items:center; gap:8px;">
+            <span class="qty-stepper">
+              <button type="button" onclick="changeQty('${i.fid}', -1)">&minus;</button>
+              <span>${i.qty}</span>
+              <button type="button" onclick="changeQty('${i.fid}', 1)">+</button>
+            </span>
+            <span style="min-width:3.2rem; text-align:right; font-weight:600;">${money(i.price * i.qty)}</span>
+          </span>
+        </div>`).join('');
+    }
+    document.getElementById('cartTotal').textContent = money(cartTotal(cart));
+  }
+
+  function changeQty(fid, delta){
+    const cart = getCart();
+    const item = cart.find(i => i.fid === fid);
+    if (!item) return;
+    setCartQty(fid, item.qty + delta);
+    renderCart();
+  }
+
+  document.getElementById('placeOrderBtn').addEventListener('click', () => {
+    const result = placeOrder(session.cid);
+    if (!result.ok){
+      showToast(result.message, 'danger');
+      return;
+    }
+    renderCart();
+    showToast(`Order ${result.order.ordID} sent to the kitchen!`, 'primary');
+  });
+
+  function renderHistory(){
+    const orders = ordersForCustomer(session.cid);
+    const list = document.getElementById('historyList');
+    const empty = document.getElementById('historyEmpty');
+    if (orders.length === 0){
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    list.innerHTML = orders.map(o => {
+      const total = o.orderitems.reduce((s,i) => s + i.price * i.qty, 0);
+      const rows = o.orderitems.map(i => `
+        <div class="order-row">
+          <span>${escapeHtml(i.foodname)} &times; ${i.qty}</span>
+          <span>${money(i.price * i.qty)}</span>
+        </div>`).join('');
+      return `
+        <div class="order-ticket">
+          <div class="order-ticket-head">
+            <span class="order-id">${escapeHtml(o.ordID)}</span>
+            <span class="order-meta">${formatDateTime(o.orderdatetime)}</span>
+          </div>
+          ${rows}
+          <div class="order-total"><span>Total</span><span>${money(total)}</span></div>
+        </div>`;
+    }).join('');
+  }
+
+  if (session){
+    renderFoodGrid();
+    renderCart();
+  }
+</script>
+</body>
+</html>

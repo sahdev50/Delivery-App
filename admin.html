@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="./favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="./favicon/favicon.svg" />
+    <link rel="shortcut icon" href="./favicon/favicon.ico" />
+    <meta name="apple-mobile-web-app-title" content="Eat Dash" />
+    <link rel="manifest" href="./favicon/site.webmanifest" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/index.css">
+    <title>Kitchen console — Eat Dash</title>
+</head>
+<body>
+
+<header class="navbar">
+    <div><a href="index.html"><img src="./public/logo.png" alt="website logo" width="150" height="50"></a></div>
+    <ul id="navLinks"></ul>
+</header>
+
+<main class="app-main">
+  <div style="max-width:1180px; margin:0 auto;">
+    <h2 class="eyebrow">
+      <span class="material-icons-outlined" style="font-size:16px;">admin_panel_settings</span>
+      Kitchen console
+    </h2>
+    <h1 class="page-title">Manage the menu &amp; orders</h1>
+    <p class="page-sub">Add new dishes, update prices or photos, and keep an eye on what customers are ordering.</p>
+
+    <div class="seg-toggle" id="adminTabs">
+      <button type="button" class="active" data-target="paneMenu">Food items</button>
+      <button type="button" data-target="paneOrders">Orders</button>
+    </div>
+
+    <div id="paneMenu" style="display:grid; grid-template-columns: 340px 1fr; gap:24px; align-items:start;">
+      <div class="card-panel" id="foodFormPanel">
+        <h3 id="foodFormTitle" style="font-weight:600; margin-bottom:4px;">Add a food item</h3>
+        <p class="page-sub" id="foodFormSub" style="margin-bottom:18px; font-size:13px;">New items appear on the customer menu immediately.</p>
+        <form id="foodForm" novalidate>
+          <input type="hidden" id="foodFid">
+          <div class="form-group">
+            <label class="form-label" for="foodName">Food name</label>
+            <input type="text" id="foodName" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="foodPrice">Price (USD)</label>
+            <input type="number" step="0.01" min="0" id="foodPrice" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="foodDescription">Description</label>
+            <textarea id="foodDescription" class="form-textarea" rows="3" placeholder="A short, appetizing description"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="foodImage">Image URL</label>
+            <input type="url" id="foodImage" class="form-input" placeholder="https://…">
+            <p class="form-help">Paste a link to a photo of the dish.</p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn btn-primary" id="foodSubmitBtn" style="flex:1;">Add item</button>
+            <button type="button" class="btn btn-outline" id="foodCancelEdit" style="display:none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card-panel">
+        <h3 style="font-weight:600; margin-bottom:4px;">Current menu</h3>
+        <p class="page-sub" style="margin-bottom:18px; font-size:13px;">Update or remove any item on the menu.</p>
+        <div style="overflow-x:auto;">
+          <table class="ed-table" id="foodTable">
+            <thead>
+              <tr>
+                <th></th>
+                <th>fid</th>
+                <th>Food name</th>
+                <th>Price</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="foodTableBody"></tbody>
+          </table>
+        </div>
+        <div id="foodEmpty" class="empty-state" style="display:none;">No food items yet. Add the first one on the left.</div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div id="paneOrders" style="display:none;">
+      <div class="card-panel">
+        <h3 style="font-weight:600; margin-bottom:4px;">All orders</h3>
+        <p class="page-sub" style="margin-bottom:18px; font-size:13px;">Every order placed by a customer, most recent first.</p>
+        <div id="ordersList" style="display:flex; flex-direction:column; gap:14px;"></div>
+        <div id="ordersEmpty" class="empty-state" style="display:none;">No orders have come in yet.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="./js/app.js"></script>
+<script>
+  requireAdmin();
+
+  document.querySelectorAll('#adminTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#adminTabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('paneMenu').style.display = 'none';
+      document.getElementById('paneOrders').style.display = 'none';
+      const target = document.getElementById(btn.dataset.target);
+      target.style.display = btn.dataset.target === 'paneMenu' ? 'grid' : 'block';
+      if (btn.dataset.target === 'paneOrders') renderOrders();
+    });
+  });
+
+  const PLACEHOLDER_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"><rect width="44" height="44" rx="8" fill="%23ffedd5"/><text x="50%" y="55%" font-size="18" text-anchor="middle" fill="%23f97316">🍽</text></svg>'
+  );
+
+  function renderFoodTable(){
+    const foods = getFoods();
+    const body = document.getElementById('foodTableBody');
+    const empty = document.getElementById('foodEmpty');
+    if (foods.length === 0){
+      body.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    body.innerHTML = foods.map(f => `
+      <tr>
+        <td><img class="thumb" src="${f.image ? escapeHtml(f.image) : PLACEHOLDER_IMG}" alt="" onerror="this.src='${PLACEHOLDER_IMG}'"></td>
+        <td><span class="fid-pill">${escapeHtml(f.fid)}</span></td>
+        <td>${escapeHtml(f.foodname)}</td>
+        <td>${money(f.price)}</td>
+        <td style="text-align:right; white-space:nowrap;">
+          <button class="btn btn-outline btn-sm" onclick="startEditFood('${f.fid}')">Update</button>
+          <button class="btn btn-danger-outline btn-sm" onclick="deleteFood('${f.fid}')">Remove</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function startEditFood(fid){
+    const food = getFoods().find(f => f.fid === fid);
+    if (!food) return;
+    document.getElementById('foodFid').value = food.fid;
+    document.getElementById('foodName').value = food.foodname;
+    document.getElementById('foodPrice').value = food.price;
+    document.getElementById('foodDescription').value = food.description || '';
+    document.getElementById('foodImage').value = food.image || '';
+    document.getElementById('foodFormTitle').textContent = `Update ${food.fid}`;
+    document.getElementById('foodFormSub').textContent = 'Editing an existing menu item.';
+    document.getElementById('foodSubmitBtn').textContent = 'Save changes';
+    document.getElementById('foodCancelEdit').style.display = 'inline-flex';
+    document.getElementById('foodFormPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function resetFoodForm(){
+    document.getElementById('foodForm').reset();
+    document.getElementById('foodFid').value = '';
+    document.getElementById('foodFormTitle').textContent = 'Add a food item';
+    document.getElementById('foodFormSub').textContent = 'New items appear on the customer menu immediately.';
+    document.getElementById('foodSubmitBtn').textContent = 'Add item';
+    document.getElementById('foodCancelEdit').style.display = 'none';
+  }
+  document.getElementById('foodCancelEdit').addEventListener('click', resetFoodForm);
+
+  document.getElementById('foodForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fid = document.getElementById('foodFid').value;
+    const foodname = document.getElementById('foodName').value.trim();
+    const price = parseFloat(document.getElementById('foodPrice').value);
+    const description = document.getElementById('foodDescription').value.trim();
+    const image = document.getElementById('foodImage').value.trim();
+    if (!foodname || isNaN(price) || price < 0) return;
+
+    const foods = getFoods();
+    if (fid){
+      const item = foods.find(f => f.fid === fid);
+      if (item){ item.foodname = foodname; item.price = price; item.description = description; item.image = image; }
+      showToast(`${fid} updated.`, 'primary');
+    } else {
+      const newFid = nextId('F', foods.map(f => f.fid));
+      foods.push({ fid: newFid, foodname, price, description, image });
+      showToast(`${newFid} added to the menu.`, 'primary');
+    }
+    saveFoods(foods);
+    renderFoodTable();
+    resetFoodForm();
+  });
+
+  function deleteFood(fid){
+    if (!confirm('Remove this item from the menu?')) return;
+    saveFoods(getFoods().filter(f => f.fid !== fid));
+    renderFoodTable();
+    showToast('Item removed.', 'danger');
+  }
+
+  function renderOrders(){
+    const orders = getOrders().slice().sort((a,b) => new Date(b.orderdatetime) - new Date(a.orderdatetime));
+    const customers = getCustomers();
+    const list = document.getElementById('ordersList');
+    const empty = document.getElementById('ordersEmpty');
+    if (orders.length === 0){
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    list.innerHTML = orders.map(o => {
+      const cust = customers.find(c => c.cid === o.cid);
+      const total = o.orderitems.reduce((s,i) => s + i.price * i.qty, 0);
+      const rows = o.orderitems.map(i => `
+        <div class="order-row">
+          <span>${escapeHtml(i.foodname)} &times; ${i.qty}</span>
+          <span>${money(i.price * i.qty)}</span>
+        </div>`).join('');
+      return `
+        <div class="order-ticket">
+          <div class="order-ticket-head">
+            <span class="order-id">${escapeHtml(o.ordID)}</span>
+            <span class="order-meta">${formatDateTime(o.orderdatetime)}</span>
+          </div>
+          <div class="order-meta" style="margin-bottom:8px;">Customer: ${cust ? escapeHtml(cust.customerName) + ' · ' + escapeHtml(cust.email) : escapeHtml(o.cid)}</div>
+          ${rows}
+          <div class="order-total"><span>Total</span><span>${money(total)}</span></div>
+        </div>`;
+    }).join('');
+  }
+
+  renderFoodTable();
+  renderOrders();
+</script>
+</body>
+</html>
