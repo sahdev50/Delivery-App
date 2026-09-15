@@ -63,34 +63,22 @@ body {
     align-items: center;
 }
 
-.navbar ul li{
-    cursor: pointer;
-}
-
-.navbar .nav-links li{
-    padding: 5px;
-    border-bottom: 2px solid transparent;
-    margin: 0 5px;
-    white-space: nowrap;
-    transition: 0.5s
-}
-
-.navbar .nav-links li:hover{
+.navbar ul li:nth-of-type(1){
+    margin: 0 10px;
     color: var(--primary-color);
-    border-color: rgb(241, 120, 28);
+    font-weight: 600;
 }
 
-.navbar .nav-links li:focus{
-    color: red;
+.signup-button{
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
 }
 
-.navbar .nav-icons{
-    gap: 15px;
-}
-
-.login-item{
-    white-space: nowrap;
-}
 
 .text-headline{
     color: var(--primary-color);
