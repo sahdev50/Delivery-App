@@ -18,15 +18,13 @@
     <!-- Header/Navbar -->
      <header class="navbar">
         <div>
-            <img src="./public/logo.png" alt="website logo" width="150" height="50">
+            <a href="index.html"><img src="./public/logo.png" alt="website logo" width="150" height="50"></a>
         </div>
-        
-        <ul>
+
+        <ul id="navLinks">
+            <li><a href="login.html">Login</a></li>
             <li>
-                Login
-            </li>
-            <li>
-                <button class="signup-button">Sign Up</button>
+                <button class="signup-button" onclick="location.href='register.html'">Sign Up</button>
             </li>
         </ul>
      </header>
@@ -49,7 +47,7 @@
                 <div class="search-box">
                     <span class="material-icons-outlined">location_on</span>
                     <input type="text" placeholder="Enter your location" class="search-input">
-                    <button class="search-button">
+                    <button class="search-button" id="findFoodBtn">
                         Find Food
                         <span class="material-icons-outlined">arrow_forward</span>
                     </button>
@@ -106,7 +104,7 @@
      </div>
        <div class="categories-heading">
             <h2>Explore Categories</h2>
-            <p>
+            <p id="viewAllCategories">
                 <span class="p-text" >View All</span>
                 <span class="material-icons-outlined">arrow_forward</span>
             </p>
@@ -141,7 +139,7 @@
             <p>On your first order</p>
         </div>
         <div class="offer-banner-button">
-            <button class="offer-button">
+            <button class="offer-button" id="orderNowBtn">
                 Order Now
                 <span class="material-icons-outlined">arrow_forward</span>
             </button>
@@ -150,5 +148,23 @@
             <img src="./public/local.png" alt="">
         </div>
      </div>
+
+<script src="./js/app.js"></script>
+<script>
+  function goToMenu(){
+    const s = getSession();
+    if (s && s.role === 'customer'){
+      window.location.href = 'customer.html';
+    } else if (s && s.role === 'admin'){
+      window.location.href = 'admin.html';
+    } else {
+      window.location.href = 'login.html';
+    }
+  }
+  document.getElementById('findFoodBtn').addEventListener('click', goToMenu);
+  document.getElementById('orderNowBtn').addEventListener('click', goToMenu);
+  document.getElementById('viewAllCategories').addEventListener('click', goToMenu);
+  document.querySelectorAll('.category-card').forEach(card => card.addEventListener('click', goToMenu));
+</script>
 </body>
 </html>
